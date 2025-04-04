@@ -52,6 +52,7 @@ def get_text_from_url(url):
         text = "\n".join([p.get_text() for p in paragraphs])
 
         return text.strip() if text else None
+    
     except Exception as e:
         print(f"크롤링 오류: {e}")
         return None
