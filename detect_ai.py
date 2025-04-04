@@ -1,3 +1,7 @@
+# etc module
+import requests
+from bs4 import BeautifulSoup
+
 # AI module 
 import torch
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
