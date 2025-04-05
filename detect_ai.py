@@ -1,6 +1,7 @@
 # etc module
 import requests
 from bs4 import BeautifulSoup
+import time
 
 # AI module 
 import torch
@@ -55,4 +56,6 @@ def get_text_from_url(url):
     
     except Exception as e:
         print(f"크롤링 오류: {e}")
+        log_file = open("log/log"+time.ctime()+".txt","w")
+        log_file.write(url+"\n",e)
         return None
