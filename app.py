@@ -1,6 +1,7 @@
 # etc module
 from typing import Union
-import detect_ai
+#import detect_ai
+import crawl
 
 # fastapi module
 from fastapi import FastAPI, Request
@@ -23,15 +24,31 @@ async def check_ai(request: Request):
 
         results = []
         for url in links:
-            text = detect_ai.get_text_from_url(url)
+            text = crawl.get_text_from_url(url)
             if not text:
                 results.append({"url": url, "ai_probability": "크롤링 실패"})
                 continue
 
-            ai_prob = detect_ai.detect_ai_generated_text(text)
-            results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
+            #ai_prob = detect_ai.detect_ai_generated_text(text)
+            #results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
 
         return JSONResponse({"results": results})
 
+    except Exception as e:
+        return JSONResponse({"error": str(e)})
+
+@app.post("/check_url/")
+async def check_url(url : str):
+    try:
+        if not url:
+            return JSONResponse({"error": "Invalid input. Expecting {'url': 'url'}"})
+
+        text = crawl.get_text_from_url(url)
+        if not text:
+            return JSONResponse({"error": "크롤링 실패"})
+        
+        print(text)
+        return JSONResponse({"text": text})
+        
     except Exception as e:
         return JSONResponse({"error": str(e)})

@@ -1,6 +1,9 @@
+# Python Modules
 beautifulsoup4
 fastapi
 uvicorn[standard] #ASGI server
 transformers
 requests
 torch
+readability-lxml
+lxml[html_clean]
