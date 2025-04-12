@@ -1,6 +1,6 @@
 # etc module
 from typing import Union
-#import detect_ai
+import detect_ai
 import crawl
 
 # fastapi module
@@ -9,11 +9,11 @@ from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-@app.route('/')
+@app.get('/')
 async def index():
     return JSONResponse(content={"message": "Welcome to the AI Detection API!"})
 
-@app.route("/check_ai", methods=["POST"])
+@app.post("/check_ai")
 async def check_ai(request: Request):
     try:
         data = await request.json()
@@ -29,8 +29,8 @@ async def check_ai(request: Request):
                 results.append({"url": url, "ai_probability": "크롤링 실패"})
                 continue
 
-            #ai_prob = detect_ai.detect_ai_generated_text(text)
-            #results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
+            ai_prob = detect_ai.detect_ai_generated_text(text)
+            results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
 
         return JSONResponse({"results": results})
 
