@@ -27,7 +27,7 @@ def detect_ai_generated_text(text):
         
         logits = outputs.logits
         probabilities = F.softmax(logits, dim=1)
-        ai_probability = probabilities[:, 1].item()
+        ai_probability = probabilities[:, 0].item()
         #print(ai_probability)
 
         return round(ai_probability, 4)
