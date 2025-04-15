@@ -6,8 +6,17 @@ import crawl
 # fastapi module
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # 실제 배포 시에는 * 대신 필요한 도메인만 열어주세요.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get('/')
 async def index():
@@ -30,7 +39,10 @@ async def check_ai(request: Request):
                 continue
 
             ai_prob = detect_ai.detect_ai_generated_text(text)
-            results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
+            if ai_prob is None:
+                results.append({"url": url, "ai_probability": "판별 실패"})
+            else:
+                results.append({"url": url, "ai_probability": ai_prob})
 
         return JSONResponse({"results": results})
 
