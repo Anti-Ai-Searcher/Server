@@ -31,46 +31,90 @@ client = TestClient(app.app)
 
 # test_detect_ai.py
 class TestDetectAI:
-    def test_AI_texts_1(self):
+    # Test for the english text AI detection 
+    def test_AI_texts_english_1(self):
+        ai_text_link = "https://velog.io/@aiyaho123/%EB%B0%B1%EC%A4%80-1065%EB%B2%88-%ED%95%9C%EC%88%98-Python-%ED%92%80%EC%9D%B4-%EB%B0%8F-%EA%B0%9C%EB%85%90-%EC%A0%95%EB%A6%AC"
+        text = crawl.get_text_from_url(ai_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result < 0.4
+    def test_AI_texts_english_2(self):
+        ai_text_link = "https://velog.io/@aiyaho123/Dyson-V12-Detect-Slim-Review-A-Laser-Powered-Cleaning-Experience-for-the-Data-Oriented-Mind#-final-thoughts"
+        text = crawl.get_text_from_url(ai_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result < 0.4
+    def test_AI_texts_english_3(self):
+        ai_text_link = "https://velog.io/@aiyaho123/Prison-Architect-Review-A-Simulation-Sandbox-for-Systems-Thinkers"
+        text = crawl.get_text_from_url(ai_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result < 0.4
+    def test_AI_texts_english_4(self):
+        ai_text_link = "https://velog.io/@aiyaho123/Spaghetti-Bolognese-for-Developers"
+        text = crawl.get_text_from_url(ai_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result < 0.4
+    
+    def test_human_texts_english_1(self):
+        human_text_link = "https://gaming.stackexchange.com/questions/276069/how-do-i-fight-sans-in-undertale"
+        text = crawl.get_text_from_url(human_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result > 0.7
+    def test_human_texts_english_2(self):
+        human_text_link = "https://www.instructables.com/How-to-install-Linux-on-your-Windows/"
+        text = crawl.get_text_from_url(human_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result > 0.7
+    def test_human_texts_english_3(self):
+        human_text_link = "https://medium.com/@ivan.mejia/c-development-using-visual-studio-code-cmake-and-lldb-d0f13d38c563"
+        text = crawl.get_text_from_url(human_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result > 0.7
+    def test_human_texts_english_4(self):
+        human_text_link = "https://medium.com/@rjun07a/my-spring-2016-anime-list-23a226b2bc14"
+        text = crawl.get_text_from_url(human_text_link)
+        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+        assert result > 0.7
+
+    # Test for the korean text AI detection 
+    def test_AI_texts_korean_1(self):
         ai_text_link = "https://ai3886.tistory.com/2"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
-    def test_AI_texts_2(self):
+        assert result < 0.4
+    def test_AI_texts_korean_2(self):
         ai_text_link = "https://ai3886.tistory.com/3"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
-    def test_AI_texts_3(self):
+        assert result < 0.4
+    def test_AI_texts_korean_3(self):
         ai_text_link = "https://ai3886.tistory.com/4"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
-    def test_AI_texts_4(self):
+        assert result < 0.4
+    def test_AI_texts_korean_4(self):
         ai_text_link = "https://ai3886.tistory.com/5"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
+        assert result < 0.4
     
-    def test_human_texts_1(self):
+    def test_human_texts_korean_1(self):
         human_text_link = "https://blog.naver.com/shinkyoungup/110092617672"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result < 0.4
-    def test_human_texts_2(self):
+        assert result > 0.8
+    def test_human_texts_korean_2(self):
         human_text_link = "https://blog.naver.com/skditjdqja12/140178347564"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result < 0.4
-    def test_human_texts_3(self):
+        assert result > 0.8
+    def test_human_texts_korean_3(self):
         human_text_link = "https://blog.naver.com/kkulmatapp/90084037882"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result < 0.4
-    def test_human_texts_4(self):
+        assert result > 0.8
+    def test_human_texts_korean_4(self):
         human_text_link = "https://m.blog.naver.com/junkigi11/20173492987"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result < 0.4
+        assert result > 0.8
 
     
