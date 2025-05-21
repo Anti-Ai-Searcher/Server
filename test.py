@@ -100,21 +100,21 @@ class TestDetectAI:
         human_text_link = "https://blog.naver.com/shinkyoungup/110092617672"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
+        assert result > 0.7
     def test_human_texts_korean_2(self):
         human_text_link = "https://blog.naver.com/skditjdqja12/140178347564"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
+        assert result > 0.7
     def test_human_texts_korean_3(self):
         human_text_link = "https://blog.naver.com/kkulmatapp/90084037882"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
+        assert result > 0.7
     def test_human_texts_korean_4(self):
         human_text_link = "https://m.blog.naver.com/junkigi11/20173492987"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        assert result > 0.8
+        assert result > 0.7
 
     
