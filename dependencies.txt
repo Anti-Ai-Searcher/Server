@@ -7,3 +7,5 @@ requests
 torch
 readability-lxml
 lxml[html_clean]
+pytest
+httpx
