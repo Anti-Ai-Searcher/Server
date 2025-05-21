@@ -1,5 +1,9 @@
-best-model.pt
+ai_model/*
 __pycache__/*
 __pycache__
 log/
 log/*
+.pytest_cache/*
+.pytest_cache/
+log/*
+log
