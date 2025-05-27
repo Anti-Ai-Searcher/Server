@@ -17,8 +17,6 @@ def detect_ai_generated_text(text : str,tokenizer , model, device):
         
         logits = outputs.logits
         probabilities = F.softmax(logits, dim=1)
-        ai_probability = probabilities[:, 1].item()
-        print(ai_probability)
         ai_probability = probabilities[:, 0].item()
         #print(ai_probability)
 
@@ -27,3 +25,78 @@ def detect_ai_generated_text(text : str,tokenizer , model, device):
     except Exception as e:
         print(f"AI 판별 오류: {e}")
         return None
+    
+def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=128):
+    try:
+        import kss
+        sentences = kss.split_sentences(text)
+    except ImportError:
+        print("경고: 'kss' 미사용. 개행 또는 마침표 기준 분리.")
+        sentences = [s.strip() for s in text.split('\n') if s.strip()]
+        if len(sentences) <= 1:
+            sentences = [s.strip() + '.' for s in text.split('.') if s.strip()]
+
+    chunks = []
+    current_chunk_sentences = []
+    current_length = 0
+    max_len_for_chunking = max_len - 2
+
+    for sentence in sentences:
+        sentence_token_ids = tokenizer.encode(sentence, add_special_tokens=False)
+        sentence_length = len(sentence_token_ids)
+
+        if sentence_length > max_len_for_chunking:
+            if current_chunk_sentences:
+                chunks.append(" ".join(current_chunk_sentences))
+            chunks.append(sentence)
+            current_chunk_sentences = []
+            current_length = 0
+            continue
+
+        if current_length + sentence_length > max_len_for_chunking:
+            if current_chunk_sentences:
+                chunks.append(" ".join(current_chunk_sentences))
+            current_chunk_sentences = [sentence]
+            current_length = sentence_length
+        else:
+            current_chunk_sentences.append(sentence)
+            current_length += sentence_length
+
+    if current_chunk_sentences:
+        chunks.append(" ".join(current_chunk_sentences))
+
+    # 3. 각 청크별 AI 생성 확률 계산
+    chunk_probabilities = []
+    for chunk in chunks:
+        if not chunk.strip():
+            continue
+        try:
+            inputs = tokenizer(chunk, padding='max_length', truncation=True, max_length=max_len, return_tensors="pt").to(device)
+            with torch.no_grad():
+                outputs = model(x=inputs['input_ids'], attention_mask=inputs['attention_mask'])
+            logits = outputs
+            probabilities = F.softmax(logits, dim=1)
+            ai_probability = probabilities[:, 0].item()
+            chunk_probabilities.append(round(ai_probability, 4))
+        except Exception as e:
+            print(f"청크 처리 오류: {e}")
+            print(f"오류 청크: {chunk[:50]}...")
+            continue
+
+    # 4. 최종 결과 반환
+    if chunk_probabilities:
+        avg_prob = round(sum(chunk_probabilities) / len(chunk_probabilities), 4)
+        max_prob = round(max(chunk_probabilities), 4)
+        return {
+            "average_probability": avg_prob,
+            "max_probability": max_prob,
+            "chunk_probabilities": chunk_probabilities,
+            "chunk_count": len(chunk_probabilities)
+        }
+    else:
+        return {
+            "average_probability": None,
+            "max_probability": None,
+            "chunk_probabilities": [],
+            "chunk_count": 0
+        }
