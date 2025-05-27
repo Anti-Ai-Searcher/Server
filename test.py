@@ -9,8 +9,9 @@ import pytest
 
 # AI module 
 import torch
-from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F
+from model import TransformerClassifier
 
 print("Load Model")
 
@@ -23,6 +24,39 @@ tokenizer = RobertaTokenizer.from_pretrained(model_name) #tokenizer
 
 model.load_state_dict(checkpoint["model_state_dict"], strict=False)
 model.to(device)
+####
+model_name_kor = "klue/roberta-base"
+tokenizer_kor = AutoTokenizer.from_pretrained(model_name_kor)
+checkpoint_kor = torch.load("ai_model/model_kor.pt", map_location=device, weights_only=True)
+
+saved_args = checkpoint_kor.get('args')
+
+if saved_args:
+    config = vars(saved_args) if not isinstance(saved_args, dict) else saved_args
+    d_model = config.get('d_model', 768)
+    nhead = config.get('nhead', 12)
+    num_layers = config.get('num_layers', 4)
+    num_classes = config.get('num_classes', 2) 
+    max_sequence_length = config.get('max_len', 128)
+else:
+    print("_____Warning: Model config not found in checkpoint, using hardcoded values._____")
+    d_model = 768
+    nhead = 12
+    num_layers = 4
+    num_classes = 2
+
+model_kor = TransformerClassifier(
+    vocab_size=tokenizer_kor.vocab_size,
+    d_model=d_model,
+    nhead=nhead,
+    num_layers=num_layers,
+    num_classes=num_classes,
+    max_len=max_sequence_length
+)
+
+model_kor.load_state_dict(checkpoint_kor["model_state_dict"])
+model_kor.to(device)
+model_kor.eval()
 
 print("Load Model Done")
 
@@ -86,51 +120,58 @@ class TestDetectAI:
     def test_AI_texts_korean_1(self):
         ai_text_link = "https://ai3886.tistory.com/2"
         text = crawl.get_text_from_url(ai_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result < 0.4
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p > 0.7
     def test_AI_texts_korean_2(self):
         ai_text_link = "https://ai3886.tistory.com/3"
         text = crawl.get_text_from_url(ai_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result < 0.4
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p > 0.7
     def test_AI_texts_korean_3(self):
         ai_text_link = "https://ai3886.tistory.com/4"
         text = crawl.get_text_from_url(ai_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result < 0.4
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p > 0.7
     def test_AI_texts_korean_4(self):
         ai_text_link = "https://ai3886.tistory.com/5"
         text = crawl.get_text_from_url(ai_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result < 0.4
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p > 0.7
     
     def test_human_texts_korean_1(self):
         human_text_link = "https://blog.naver.com/shinkyoungup/110092617672"
         text = crawl.get_text_from_url(human_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result > 0.7
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p < 0.7
     def test_human_texts_korean_2(self):
         human_text_link = "https://blog.naver.com/skditjdqja12/140178347564"
         text = crawl.get_text_from_url(human_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result > 0.7
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p < 0.7
     def test_human_texts_korean_3(self):
         human_text_link = "https://blog.naver.com/kkulmatapp/90084037882"
         text = crawl.get_text_from_url(human_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result > 0.7
+        print(text)
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p < 0.7
     def test_human_texts_korean_4(self):
         human_text_link = "https://m.blog.naver.com/junkigi11/20173492987"
         text = crawl.get_text_from_url(human_text_link)
-        result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-        print(result)
-        assert result > 0.7
-
-    
+        result = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
+        avg = result.get("average_probability")
+        max_p = result.get("max_probability")
+        assert max_p < 0.7

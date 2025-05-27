@@ -7,3 +7,4 @@ log/*
 .pytest_cache/
 log/*
 log
+*.pt
