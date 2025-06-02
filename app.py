@@ -144,7 +144,7 @@ async def check_str(request: Request):
                 content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
             )
 
-        ai_prob = detect_ai.detect_ai_generated_text(s, tokenizer, model, device)
+        ai_prob = detect_ai.detect_ai_generated_text(s, tokenizer, model, device, model_kor, tokenizer_kor)
         result = {
             "input": s,
             "result": ai_prob if ai_prob else "판별 실패"

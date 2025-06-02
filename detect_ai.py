@@ -7,12 +7,12 @@ import torch
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 import torch.nn.functional as F
 
-def detect_ai_generated_text(text: str, tokenizer, model, device):
+def detect_ai_generated_text(text: str, tokenizer, model, device, model_kor, tokenizer_kor):
     try:
         detected_lang = detect(text)
         if(detected_lang == 'ko'):
             print(f"Detected language: Korean, {text}")
-            prob = detect_ai_generated_text_kor(text, tokenizer, model, device)
+            prob = detect_ai_generated_text_kor(text, tokenizer_kor, model_kor, device)
             if prob['max_probability'] is None:
                 prob = "error"
             else:
