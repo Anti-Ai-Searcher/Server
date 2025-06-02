@@ -1,12 +1,30 @@
 # etc module
 from bs4 import BeautifulSoup
+from langdetect import detect
 
-# AI module 
+# AI module
 import torch
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 import torch.nn.functional as F
 
-def detect_ai_generated_text(text : str,tokenizer , model, device):
+def detect_ai_generated_text(text: str, tokenizer, model, device):
+    try:
+        detected_lang = detect(text)
+        if(detected_lang == 'ko'):
+            print(f"Detected language: Korean, {text}")
+            prob = detect_ai_generated_text_kor(text, tokenizer, model, device)
+            if prob['max_probability'] is None:
+                prob = "error"
+            else:
+                prob = prob['max_probability']
+            return prob
+        else:
+            print(f"Detected language: English, {text}")
+            return detect_ai_generated_text_eng(text, tokenizer, model, device)
+    except:
+        return detect_ai_generated_text_eng(text, tokenizer, model, device)
+
+def detect_ai_generated_text_eng(text : str,tokenizer , model, device):
     try:
         inputs = tokenizer(
             text, padding=True, truncation=True, max_length=128, return_tensors="pt"

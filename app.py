@@ -2,6 +2,10 @@
 from typing import Union
 import detect_ai
 import crawl
+import os
+import aiofiles
+from io import BytesIO
+from pdfminer.high_level import extract_text
 
 # AI module 
 import torch
@@ -9,7 +13,7 @@ from transformers import RobertaTokenizer, RobertaForSequenceClassification, Aut
 import torch.nn.functional as F
 
 # fastapi module
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from model import TransformerClassifier
@@ -66,11 +70,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # 실제 배포 시에는 * 대신 필요한 도메인만 열어주세요.
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+UPLOAD_DIR = "./uploads" # 임시 경로
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.get('/')
 async def index():
@@ -97,16 +104,7 @@ async def check_ai(request: Request):
                 continue
 
             ai_prob = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
-            #ai_prob = detect_ai.detect_ai_generated_text_kor(text,tokenizer_kor, model_kor, device)
-            # avg = ai_prob.get("average_probability")
-            # max_p = ai_prob.get("max_probability")
-            # num_chunks = ai_prob.get("chunk_count")
-            # chunk_probs = ai_prob.get("chunk_probabilities")
-            # result = {
-            #     "average_probability": avg,
-            #     "max_probability": max_p,
-            #     "chunk_count": num_chunks
-            # }
+
             results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
             if ai_prob is None:
                 results.append({"url": url, "ai_probability": "판별 실패"})
@@ -134,13 +132,62 @@ async def check_url(url : str):
     except Exception as e:
         return JSONResponse({"error": str(e)})
 
-@app.post("/check_str/")
-async def check_str(s : str):
+@app.post("/check_str")
+async def check_str(request: Request):
     try:
-        if(len(s) < 200):
-            return JSONResponse({"error": f"Invalid input. Expecting the string's length must longer than 200"})
-        ai_prob = detect_ai.detect_ai_generated_text(s,tokenizer, model, device)
-        result = {"input" : s, "result" : ai_prob if ai_prob else "판별 실패"}
-        return result
-    except:
-        return JSONResponse({'error': 'Invalid input. Expecting a string'})
+        data = await request.json()
+        s = data.get("text", "")
+        print(f'input : {s}')
+        if len(s) < 200:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
+            )
+
+        ai_prob = detect_ai.detect_ai_generated_text(s, tokenizer, model, device)
+        result = {
+            "input": s,
+            "result": ai_prob if ai_prob else "판별 실패"
+        }
+        return JSONResponse(content=result)
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"result": "Invalid input. Expecting a JSON object with a 'text' field"}
+        )
+
+@app.post("/check_pdf")
+async def check_pdf(request: Request):
+    try:
+        form = await request.form()
+        upload: UploadFile | None = form.get("upload")
+
+        if upload is None:
+            raise HTTPException(status_code=400, detail="파일이 전송되지 않았습니다. (필드명: upload)")
+
+        if upload.content_type != "application/pdf" and not upload.filename.lower().endswith(".pdf"):
+            raise HTTPException(status_code=400, detail="PDF 파일만 업로드할 수 있습니다.")
+
+        pdf_bytes = await upload.read()
+        text = extract_text(BytesIO(pdf_bytes)).strip()
+        print(f'pdf text : {text}')
+        if not text:
+            return JSONResponse({"error": "PDF에서 텍스트를 추출할 수 없습니다."})
+        elif len(text) < 200:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
+            )
+        ai_prob = detect_ai.detect_ai_generated_text(text, tokenizer, model, device)
+        result = {
+            "input": text,
+            "result": ai_prob if ai_prob else "판별 실패"
+        }
+        return JSONResponse(result)
+
+    except HTTPException as e:
+        return JSONResponse({"error": e.detail}, status_code=e.status_code)
+
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
