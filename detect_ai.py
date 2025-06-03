@@ -11,7 +11,7 @@ def detect_ai_generated_text(text: str, tokenizer, model, device, model_kor, tok
     try:
         detected_lang = detect(text)
         if(detected_lang == 'ko'):
-            print(f"Detected language: Korean, {text}")
+            #print(f"Detected language: Korean, {text}")
             prob = detect_ai_generated_text_kor(text, tokenizer_kor, model_kor, device)
             if prob['max_probability'] is None:
                 prob = "error"
@@ -19,7 +19,7 @@ def detect_ai_generated_text(text: str, tokenizer, model, device, model_kor, tok
                 prob = prob['max_probability']
             return prob
         else:
-            print(f"Detected language: English, {text}")
+            #print(f"Detected language: English, {text}")
             return detect_ai_generated_text_eng(text, tokenizer, model, device)
     except:
         return detect_ai_generated_text_eng(text, tokenizer, model, device)
@@ -98,7 +98,7 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=12
             chunk_probabilities.append(round(ai_probability, 4))
         except Exception as e:
             print(f"청크 처리 오류: {e}")
-            print(f"오류 청크: {chunk[:50]}...")
+            #print(f"오류 청크: {chunk[:50]}...")
             continue
 
     # 4. 최종 결과 반환

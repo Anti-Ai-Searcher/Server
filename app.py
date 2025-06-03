@@ -103,7 +103,7 @@ async def check_ai(request: Request):
                 results.append({"url": url, "ai_probability": "텍스트 길이 부족"})
                 continue
 
-            ai_prob = detect_ai.detect_ai_generated_text(text,tokenizer, model, device)
+            ai_prob = detect_ai.detect_ai_generated_text(text,tokenizer, model, device, model_kor, tokenizer_kor)
 
             results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
             if ai_prob is None:
@@ -179,7 +179,7 @@ async def check_pdf(request: Request):
                 status_code=400,
                 content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
             )
-        ai_prob = detect_ai.detect_ai_generated_text(text, tokenizer, model, device)
+        ai_prob = detect_ai.detect_ai_generated_text(text, tokenizer, model, device,model_kor,tokenizer_kor)
         result = {
             "input": text,
             "result": ai_prob if ai_prob else "판별 실패"
