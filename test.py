@@ -121,40 +121,48 @@ class TestDetectAI:
         ai_text_link = "https://ai3886.tistory.com/2"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result > 0.7
     def test_AI_texts_korean_2(self):
         ai_text_link = "https://ai3886.tistory.com/3"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result > 0.7
     def test_AI_texts_korean_3(self):
         ai_text_link = "https://ai3886.tistory.com/4"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result > 0.7
     def test_AI_texts_korean_4(self):
         ai_text_link = "https://ai3886.tistory.com/5"
         text = crawl.get_text_from_url(ai_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result > 0.7
     
     def test_human_texts_korean_1(self):
         human_text_link = "https://ai3886.tistory.com/1"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result < 0.7
     def test_human_texts_korean_2(self):
         human_text_link = "https://aboooks.tistory.com/37"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result < 0.7
     def test_human_texts_korean_3(self):
         human_text_link = "https://www.ohmynews.com/NWS_Web/View/at_pg.aspx?CNTN_CD=A0000304103"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result < 0.7
     def test_human_texts_korean_4(self):
         human_text_link = "https://m.blog.naver.com/junkigi11/20173492987"
         text = crawl.get_text_from_url(human_text_link)
         result = detect_ai.detect_ai_generated_text(text,tokenizer, model, device,model_kor,tokenizer_kor)
+        print(result)
         assert result < 0.7
