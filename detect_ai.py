@@ -103,8 +103,11 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=12
 
     # 4. 최종 결과 반환
     if chunk_probabilities:
-        avg_prob = round(sum(chunk_probabilities) / len(chunk_probabilities), 4)
-        max_prob = round(max(chunk_probabilities), 4)
+        filtered_probs = remove_outliers_iqr(chunk_probabilities)
+        avg_prob = round(sum(filtered_probs) / len(filtered_probs), 4)
+        max_prob = round(max(filtered_probs), 4)
+        print(filtered_probs)
+        
         return {
             "average_probability": avg_prob,
             "max_probability": max_prob,
@@ -118,3 +121,15 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=12
             "chunk_probabilities": [],
             "chunk_count": 0
         }
+    
+
+def remove_outliers_iqr(probs):
+    sorted_probs = sorted(probs)
+    q1 = sorted_probs[len(sorted_probs) // 4]
+    q3 = sorted_probs[len(sorted_probs) * 3 // 4]
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+
+    filtered = [p for p in probs if lower <= p <= upper]
+    return filtered
