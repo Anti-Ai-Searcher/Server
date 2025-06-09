@@ -12,4 +12,4 @@ httpx
 kss
 aiofiles
 langdetect
-pdfminer
+pdfminer.six
