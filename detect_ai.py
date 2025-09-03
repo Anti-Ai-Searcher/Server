@@ -41,7 +41,7 @@ def detect_ai_generated_text_eng(text : str,tokenizer , model, device):
         return round(ai_probability, 4)
 
     except Exception as e:
-        print(f"AI 판별 오류: {e}")
+        #print(f"AI 판별 오류: {e}")
         return None
     
 def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=128):
@@ -49,7 +49,7 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=12
         import kss
         sentences = kss.split_sentences(text)
     except ImportError:
-        print("경고: 'kss' 미사용. 개행 또는 마침표 기준 분리.")
+        #print("경고: 'kss' 미사용. 개행 또는 마침표 기준 분리.")
         sentences = [s.strip() for s in text.split('\n') if s.strip()]
         if len(sentences) <= 1:
             sentences = [s.strip() + '.' for s in text.split('.') if s.strip()]
@@ -97,8 +97,7 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=12
             ai_probability = probabilities[:, 0].item()
             chunk_probabilities.append(round(ai_probability, 4))
         except Exception as e:
-            print(f"청크 처리 오류: {e}")
-            #print(f"오류 청크: {chunk[:50]}...")
+            #print(f"청크 처리 오류: {e}")
             continue
 
     # 4. 최종 결과 반환

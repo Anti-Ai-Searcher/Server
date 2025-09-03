@@ -21,7 +21,7 @@ from model import TransformerClassifier
 print("Load Model")
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model_name = 'roberta-base'  # 학습할 때 사용한 모델이 'roberta-large'였는지 확인
+model_name = 'roberta-base'
 model = RobertaForSequenceClassification.from_pretrained(model_name)
 
 checkpoint = torch.load("ai_model/best-model.pt", map_location=device, weights_only=True)
