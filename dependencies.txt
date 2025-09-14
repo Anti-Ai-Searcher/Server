@@ -13,3 +13,5 @@ kss
 aiofiles
 langdetect
 pdfminer.six
+clip
+Pillow
