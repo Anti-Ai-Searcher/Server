@@ -10,7 +10,6 @@ lxml[html_clean]
 pytest
 httpx
 kss
-aiofiles
 langdetect
 pdfminer.six
 clip

@@ -1,6 +1,6 @@
 # import our main modules
 import app
-import crawl
+import read_contents.crawl as crawl
 import detect_ai
 
 # import the test client
@@ -11,7 +11,7 @@ import pytest
 import torch
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer
 import torch.nn.functional as F
-from model import TransformerClassifier
+from models.model import TransformerClassifier
 
 print("Load Model")
 

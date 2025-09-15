@@ -1,70 +1,28 @@
 # etc module
 from typing import Union
 import detect_ai
-import crawl
+import read_contents.crawl as crawl
 import os
-import aiofiles
 from io import BytesIO
-from pdfminer.high_level import extract_text
-
-# AI module 
-import torch
-from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer
-import torch.nn.functional as F
 
 # fastapi module
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from model import TransformerClassifier
+
+from models import eng_loader, kor_loader, img_loader
+from models.model import device
 
 print("Load Model")
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model_name = 'roberta-base'
-model = RobertaForSequenceClassification.from_pretrained(model_name)
-
-checkpoint = torch.load("ai_model/best-model.pt", map_location=device, weights_only=True)
-tokenizer = RobertaTokenizer.from_pretrained(model_name) #tokenizer
-
-model.load_state_dict(checkpoint["model_state_dict"], strict=False)
-model.to(device)
-
-######
-model_name_kor = "klue/roberta-base"
-tokenizer_kor = AutoTokenizer.from_pretrained(model_name_kor)
-checkpoint_kor = torch.load("ai_model/model_kor.pt", map_location=device, weights_only=True)
-
-saved_args = checkpoint_kor.get('args')
-
-if saved_args:
-    config = vars(saved_args) if not isinstance(saved_args, dict) else saved_args
-    d_model = config.get('d_model', 768)
-    nhead = config.get('nhead', 12)
-    num_layers = config.get('num_layers', 4)
-    num_classes = config.get('num_classes', 2) 
-    max_sequence_length = config.get('max_len', 128)
-else:
-    print("_____Warning: Model config not found in checkpoint, using hardcoded values._____")
-    d_model = 768
-    nhead = 12
-    num_layers = 4
-    num_classes = 2
-
-model_kor = TransformerClassifier(
-    vocab_size=tokenizer_kor.vocab_size,
-    d_model=d_model,
-    nhead=nhead,
-    num_layers=num_layers,
-    num_classes=num_classes,
-    max_len=max_sequence_length
-)
-
-model_kor.load_state_dict(checkpoint_kor["model_state_dict"])
-model_kor.to(device)
-model_kor.eval()
+# basic model setting
+model_eng, model_eng_tokenizer = eng_loader.get_english_model()
+model_kor, model_kor_tokenizer = kor_loader.get_korean_model()
+model_img = img_loader.get_image_model()
 
 print("Load Model Done")
+
+# FastAPI Apps
 
 app = FastAPI()
 
@@ -76,12 +34,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+## Settings
+
 UPLOAD_DIR = "./uploads" # 임시 경로
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+## Paths
+
 @app.get('/')
 async def index():
-    return JSONResponse(content={"message": "Welcome to the AI Detection API!"})
+    return JSONResponse(content={"message": "Welcome to the Anti AI Searcher API!"})
 
 @app.post("/check_ai")
 async def check_ai(request: Request):
@@ -127,6 +89,8 @@ async def check_url(url : str):
             return JSONResponse({"error": "크롤링 실패"})
         
         print(text)
+        ai_prob = detect_ai.detect_ai_generated_text_kor(text,model_kor_tokenizer,model_kor,device)
+        print(ai_prob)
         return JSONResponse({"text": text})
         
     except Exception as e:
@@ -144,7 +108,7 @@ async def check_str(request: Request):
                 content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
             )
 
-        ai_prob = detect_ai.detect_ai_generated_text(s, tokenizer, model, device, model_kor, tokenizer_kor)
+        ai_prob = detect_ai.detect_ai_generated_text(s, model_kor_tokenizer, model_kor, model_kor, model_kor_tokenizer)
         result = {
             "input": s,
             "result": ai_prob if ai_prob else "판별 실패"
@@ -170,7 +134,7 @@ async def check_pdf(request: Request):
             raise HTTPException(status_code=400, detail="PDF 파일만 업로드할 수 있습니다.")
 
         pdf_bytes = await upload.read()
-        text = extract_text(BytesIO(pdf_bytes)).strip()
+        text = "asfsdafsad"
         print(f'pdf text : {text}')
         if not text:
             return JSONResponse({"error": "PDF에서 텍스트를 추출할 수 없습니다."})

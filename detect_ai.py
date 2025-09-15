@@ -1,13 +1,13 @@
 # etc module
-from bs4 import BeautifulSoup
 from langdetect import detect
 
 # AI module
 import torch
-from transformers import RobertaTokenizer, RobertaForSequenceClassification
 import torch.nn.functional as F
+from models.model import device
+import kss
 
-def detect_ai_generated_text(text: str, tokenizer, model, device, model_kor, tokenizer_kor):
+def detect_ai_generated_text(text: str, tokenizer, model, model_kor, tokenizer_kor):
     try:
         detected_lang = detect(text)
         if(detected_lang == 'ko'):
@@ -43,10 +43,20 @@ def detect_ai_generated_text_eng(text : str,tokenizer , model, device):
     except Exception as e:
         #print(f"AI 판별 오류: {e}")
         return None
-    
+
+def remove_outliers_iqr(probs):
+    sorted_probs = sorted(probs)
+    q1 = sorted_probs[len(sorted_probs) // 4]
+    q3 = sorted_probs[len(sorted_probs) * 3 // 4]
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+
+    filtered = [p for p in probs if lower <= p <= upper]
+    return filtered
+
 def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=128):
     try:
-        import kss
         sentences = kss.split_sentences(text)
     except ImportError:
         #print("경고: 'kss' 미사용. 개행 또는 마침표 기준 분리.")
@@ -120,15 +130,5 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=12
             "chunk_probabilities": [],
             "chunk_count": 0
         }
-    
 
-def remove_outliers_iqr(probs):
-    sorted_probs = sorted(probs)
-    q1 = sorted_probs[len(sorted_probs) // 4]
-    q3 = sorted_probs[len(sorted_probs) * 3 // 4]
-    iqr = q3 - q1
-    lower = q1 - 1.5 * iqr
-    upper = q3 + 1.5 * iqr
 
-    filtered = [p for p in probs if lower <= p <= upper]
-    return filtered
