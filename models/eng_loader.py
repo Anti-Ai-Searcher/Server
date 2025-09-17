@@ -11,8 +11,7 @@ def get_english_model():
     state = ckpt['state_dict'] if 'state_dict' in ckpt else ckpt
     model.load_state_dict(state, strict = True)
     model.to(device)
-
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast = True)
-
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast = False)
+    model.eval()
     print("Done")
     return model, tokenizer
