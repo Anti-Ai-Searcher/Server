@@ -12,17 +12,11 @@ def get_korean_model():
 
     if saved_args:
         config = vars(saved_args) if not isinstance(saved_args, dict) else saved_args
-        d_model = config.get('d_model', 768)
-        nhead = config.get('nhead', 12)
-        num_layers = config.get('num_layers', 4)
+        d_model = config.get('d_model')
+        nhead = config.get('nhead')
+        num_layers = config.get('num_layers')
         num_classes = config.get('num_classes', 2) 
-        max_sequence_length = config.get('max_len', 128)
-    else:
-        print("_____Warning: Model config not found in checkpoint, using hardcoded values._____")
-        d_model = 768
-        nhead = 12
-        num_layers = 4
-        num_classes = 2
+        max_sequence_length = config.get('max_len', 258)
 
     model_kor = TransformerClassifier(
         vocab_size=tokenizer_kor.vocab_size,
