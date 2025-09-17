@@ -16,7 +16,7 @@ from models.model import device
 print("Load Model")
 
 # basic model setting
-model_eng, model_eng_tokenizer = eng_loader.get_english_model()
+model_eng = eng_loader.get_english_model()
 model_kor, model_kor_tokenizer = kor_loader.get_korean_model()
 model_img = img_loader.get_image_model()
 
