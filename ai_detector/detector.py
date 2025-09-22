@@ -8,7 +8,7 @@ def detect_ai_generated_text(text: str, tokenizer, model, device, model_kor, tok
         detected_lang = detect(text)
         if(detected_lang == 'ko'):
             #print(f"Detected language: Korean, {text}")
-            prob = detect_ai_generated_text_kor(text, tokenizer_kor, model_kor, device)
+            prob = detect_ai_generated_text_kor_v2(text, tokenizer_kor, model_kor, device)
             if prob['max_probability'] is None:
                 prob = "error"
             else:
@@ -58,6 +58,32 @@ def detect_ai_generated_text_kor(text: str, tokenizer, model, device, max_len=25
             chunk_probabilities.append(round(ai_probability, 4))
         except Exception as e:
             #print(f"청크 처리 오류: {e}")
+            continue
+
+    return utils.format_detection_results(chunk_probabilities)
+
+def detect_ai_generated_text_kor_v2(text: str, tokenizer, model, device, max_len=258):
+    chunk_probabilities = []
+
+    chunk_ids_list = utils.chunk_token_ids_by_sentence(text, tokenizer, max_len)
+
+    for chunk_ids in chunk_ids_list:
+        if not chunk_ids:
+            continue
+        
+        try:
+            input_ids = torch.tensor(chunk_ids).unsqueeze(0).to(device)
+            attention_mask = torch.ones(input_ids.shape, dtype=torch.long).to(device)
+
+            with torch.no_grad():
+                outputs = model(x=input_ids, attention_mask=attention_mask)
+            
+            logits = outputs
+            probabilities = F.softmax(logits, dim=1)
+            ai_probability = probabilities[:, 0].item()
+            chunk_probabilities.append(round(ai_probability, 4))
+            
+        except Exception as e:
             continue
 
     return utils.format_detection_results(chunk_probabilities)
