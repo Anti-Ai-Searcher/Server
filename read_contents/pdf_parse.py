@@ -29,9 +29,8 @@ def pdf_parse(path: str, tokenizer, max_token: int, overlap: int = 25):
     ]
 
     # 디버깅: 얼마만큼 쪼개졌는지
-    print(f"[pdf_parse] {len(chunks)} chunks (<= {128} tokens each, stride={overlap}).")
-
-    print(tokenizer.batch_decode(input_id_chunks, skip_special_tokens=True))
+    # print(f"[pdf_parse] {len(chunks)} chunks (<= {128} tokens each, stride={overlap}).")
+    # print(tokenizer.batch_decode(input_id_chunks, skip_special_tokens=True))
     
     return chunks
 
