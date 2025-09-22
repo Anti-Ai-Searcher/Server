@@ -8,8 +8,8 @@ from nltk.tokenize import sent_tokenize
 
 import time
 
-from app import model_eng_tokenizer as tokenizer_eng
-from app import model_kor_tokenizer as tokenizer_kor
+from models.eng_loader import model_eng_tokenizer as tokenizer_eng
+from models.kor_loader import model_kor_tokenizer as tokenizer_kor
 
 def get_tokens_from_url(url):
     """ 주어진 URL에서 본문 텍스트 크롤링 """
