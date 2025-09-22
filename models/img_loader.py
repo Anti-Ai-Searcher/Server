@@ -3,6 +3,7 @@ from torch import nn
 from PIL import Image
 from models.model import device
 
+
 class CLIPBinary(nn.Module):
     def __init__(self, base_model):
         super().__init__()
@@ -28,3 +29,4 @@ def get_image_model():
     print("Done")
     return model
 
+model_img = get_image_model()

@@ -1,40 +1,58 @@
 import logging
 from pdfminer.high_level import extract_text
-from app import model_kor_tokenizer
+from langdetect import detect
+from nltk.tokenize import sent_tokenize
+
+from models.eng_loader import model_eng_tokenizer as tokenizer_eng
+from models.kor_loader import model_kor_tokenizer as tokenizer_kor
 
 # pdfminer 경고 억제
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
-def pdf_parse(path: str, tokenizer, max_token: int, overlap: int = 25):
+def pdf_parse(path: str, max_len: int, overlap: int = 25):
     
     # 1. PDF 텍스트 추출
     text = extract_text(path)
-    print(text)
-    # 2. 토큰화
-    enc = tokenizer(
-        text,
-        max_length=128,
-        truncation=True,
-        stride=overlap,
-        return_overflowing_tokens=True,
-        add_special_tokens=True,
-    )
-
-    input_id_chunks = enc["input_ids"]              # List[List[int]]
-    attn_mask_chunks = enc["attention_mask"]        # List[List[int]]
-
-    chunks = [
-        {"input_ids": ids, "attention_mask": mask}
-        for ids, mask in zip(input_id_chunks, attn_mask_chunks)
-    ]
-
-    # 디버깅: 얼마만큼 쪼개졌는지
-    # print(f"[pdf_parse] {len(chunks)} chunks (<= {128} tokens each, stride={overlap}).")
-    # print(tokenizer.batch_decode(input_id_chunks, skip_special_tokens=True))
     
+    detected_lang = detect(text)
+    if detected_lang == "kor":
+        sentences = kss.split_sentences(text)
+        tokenizer = tokenizer_kor
+    else:
+        sentences = sent_tokenize(text)
+        tokenizer = tokenizer_eng    
+
+    chunks = []
+    current_chunk_sentences = []
+    current_length = 0
+    max_len_for_chunking = max_len - 2  # special token 자리
+
+    for sentence in sentences:
+        sentence_token_ids = tokenizer.encode(sentence, add_special_tokens=False)
+        sentence_length = len(sentence_token_ids)
+
+        # 문장 하나가 너무 긴 경우 → 그대로 청크로 넣기
+        if sentence_length > max_len_for_chunking:
+            if current_chunk_sentences:
+                chunks.append(" ".join(current_chunk_sentences))
+            chunks.append(sentence)
+            current_chunk_sentences = []
+            current_length = 0
+            continue
+
+        # 현재 청크에 넣으면 초과 → 새로운 청크 시작
+        if current_length + sentence_length > max_len_for_chunking:
+            if current_chunk_sentences:
+                chunks.append(" ".join(current_chunk_sentences))
+            current_chunk_sentences = [sentence]
+            current_length = sentence_length
+        else:
+            current_chunk_sentences.append(sentence)
+            current_length += sentence_length
+
+    if current_chunk_sentences:
+        chunks.append(" ".join(current_chunk_sentences))
     return chunks
 
-
-
 if __name__ == "__main__":
-    pdf_parse("uploads/test.pdf", model_kor_tokenizer, 256)
+    pdf_parse("uploads/test.pdf",  256)

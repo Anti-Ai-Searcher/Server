@@ -10,17 +10,10 @@ from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import eng_loader, kor_loader, img_loader
 from models.model import device
-
-print("Load Model")
-
-# basic model setting
-model_eng, model_eng_tokenizer = eng_loader.get_english_model()
-model_kor, model_kor_tokenizer = kor_loader.get_korean_model()
-model_img = img_loader.get_image_model()
-
-print("Load Model Done")
+from models.eng_loader import model_eng, model_eng_tokenizer
+from models.kor_loader import model_kor, model_kor_tokenizer
+from models.img_loader import model_img
 
 # FastAPI Apps
 

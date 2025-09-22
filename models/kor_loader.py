@@ -34,3 +34,5 @@ def get_korean_model():
     print("Done")
 
     return model_kor, tokenizer_kor
+
+model_kor, model_kor_tokenizer = get_korean_model()
