@@ -15,3 +15,5 @@ def get_english_model():
     model.eval()
     print("Done")
     return model, tokenizer
+
+model_eng, model_eng_tokenizer = get_english_model()
