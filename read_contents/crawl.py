@@ -33,9 +33,9 @@ def get_tokens_from_url(url):
         log_file.close()
         return None
 
-def tokenize_text_kor(text: str, max_len: int, overlap: int = 25):
+def tokenize_text_kor(text: str,max_len: int, overlap: int = 25):
     chunks = []
-    current_chunk_sentences = []
+    current_chunk_ids = []
     current_length = 0
     max_len_for_chunking = max_len - 2
 
@@ -46,30 +46,30 @@ def tokenize_text_kor(text: str, max_len: int, overlap: int = 25):
         sentence_length = len(sentence_token_ids)
 
         if sentence_length > max_len_for_chunking:
-            if current_chunk_sentences:
-                chunks.append(" ".join(current_chunk_sentences))
-            chunks.append(sentence)
-            current_chunk_sentences = []
-            current_length = 0
+            if current_chunk_ids:
+                chunks.append(current_chunk_ids)
+                current_chunk_ids = []
+                current_length = 0
+            chunks.append(sentence_token_ids)
             continue
 
         if current_length + sentence_length > max_len_for_chunking:
-            if current_chunk_sentences:
-                chunks.append(" ".join(current_chunk_sentences))
-            current_chunk_sentences = [sentence]
+            if current_chunk_ids:
+                chunks.append(current_chunk_ids)
+            current_chunk_ids = sentence_token_ids
             current_length = sentence_length
         else:
-            current_chunk_sentences.append(sentence)
+            current_chunk_ids.extend(sentence_token_ids)
             current_length += sentence_length
 
-    if current_chunk_sentences:
-        chunks.append(" ".join(current_chunk_sentences))
+    if current_chunk_ids:
+        chunks.append(current_chunk_ids)
     
     return chunks
 
-def tokenize_text_eng(text: str,max_len: int, overlap: int = 25):
+def tokenize_text_eng(text: str, max_len: int, overlap: int = 25):
     chunks = []
-    current_chunk_sentences = []
+    current_chunk_ids = []
     current_length = 0
     max_len_for_chunking = max_len - 2 
 
@@ -80,23 +80,23 @@ def tokenize_text_eng(text: str,max_len: int, overlap: int = 25):
         sentence_length = len(sentence_token_ids)
 
         if sentence_length > max_len_for_chunking:
-            if current_chunk_sentences:
-                chunks.append(" ".join(current_chunk_sentences))
-            chunks.append(sentence)
-            current_chunk_sentences = []
-            current_length = 0
+            if current_chunk_ids:
+                chunks.append(current_chunk_ids)
+                current_chunk_ids = []
+                current_length = 0
+            chunks.append(sentence_token_ids)
             continue
 
         if current_length + sentence_length > max_len_for_chunking:
-            if current_chunk_sentences:
-                chunks.append(" ".join(current_chunk_sentences))
-            current_chunk_sentences = [sentence]
+            if current_chunk_ids:
+                chunks.append(current_chunk_ids)
+            current_chunk_ids = sentence_token_ids
             current_length = sentence_length
         else:
-            current_chunk_sentences.append(sentence)
+            current_chunk_ids.extend(sentence_token_ids)
             current_length += sentence_length
 
-    if current_chunk_sentences:
-        chunks.append(" ".join(current_chunk_sentences))
+    if current_chunk_ids:
+        chunks.append(current_chunk_ids)
     
     return chunks

@@ -5,6 +5,7 @@ from nltk.tokenize import sent_tokenize
 
 from models.eng_loader import model_eng_tokenizer as tokenizer_eng
 from models.kor_loader import model_kor_tokenizer as tokenizer_kor
+import kss
 
 # pdfminer 경고 억제
 logging.getLogger("pdfminer").setLevel(logging.ERROR)

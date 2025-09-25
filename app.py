@@ -1,6 +1,6 @@
 # etc module
 from typing import Union
-import detect_ai
+import ai_detector.detector as detector
 import read_contents.crawl as crawl
 import os
 from io import BytesIO
@@ -58,7 +58,7 @@ async def check_ai(request: Request):
                 results.append({"url": url, "ai_probability": "텍스트 길이 부족"})
                 continue
 
-            ai_prob = detect_ai.detect_ai_generated_text(text,tokenizer, model, device, model_kor, tokenizer_kor)
+            ai_prob = detector.detect_ai_generated_text(text, model_eng, model_kor)
 
             results.append({"url": url, "ai_probability": ai_prob if ai_prob else "판별 실패"})
             if ai_prob is None:
@@ -82,7 +82,7 @@ async def check_url(url : str):
             return JSONResponse({"error": "크롤링 실패"})
         
         print(text)
-        ai_prob = detect_ai.detect_ai_generated_text_kor(text,model_kor_tokenizer,model_kor,device)
+        ai_prob = detector.detect_ai_generated_text_kor(text,model_kor)
         print(ai_prob)
         return JSONResponse({"text": text})
         
@@ -101,7 +101,7 @@ async def check_str(request: Request):
                 content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
             )
 
-        ai_prob = detect_ai.detect_ai_generated_text(s, model_kor_tokenizer, model_kor, model_kor, model_kor_tokenizer)
+        ai_prob = detector.detect_ai_generated_text(s, model_eng, model_kor)
         result = {
             "input": s,
             "result": ai_prob if ai_prob else "판별 실패"
@@ -136,7 +136,7 @@ async def check_pdf(request: Request):
                 status_code=400,
                 content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
             )
-        ai_prob = detect_ai.detect_ai_generated_text(text, tokenizer, model, device,model_kor,tokenizer_kor)
+        ai_prob = detector.detect_ai_generated_text(text, model_eng,model_kor)
         result = {
             "input": text,
             "result": ai_prob if ai_prob else "판별 실패"
