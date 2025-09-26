@@ -4,9 +4,8 @@ from models.model import device
 
 def get_english_model():
     print("Load English Model")
-    
-    ckpt = torch.load('ai_model/model_eng.pt', map_location=device, weights_only=True)
-    model_name = ckpt.get('model_name', 'roberta-base') # mocrosoft/deberta-v3-base OR roberta-base
+    ckpt = torch.load('ai_model/model_eng.pt', map_location=device)
+    model_name = ckpt.get('model_name', 'microsoft/deberta-v3-base')
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels = 2)
     state = ckpt['state_dict'] if 'state_dict' in ckpt else ckpt
     model.load_state_dict(state, strict = True)
@@ -17,3 +16,4 @@ def get_english_model():
     return model, tokenizer
 
 model_eng, model_eng_tokenizer = get_english_model()
+
