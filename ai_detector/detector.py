@@ -5,6 +5,8 @@ import torch.nn.functional as F
 import read_contents.crawl as crawl
 from models.model import device
 from models.eng_loader import model_eng_tokenizer as tokenizer_eng
+from models.img_loader import model_img_preprocess
+from PIL import Image
 
 def detect_ai_generated_text(text: str, model_eng, model_kor):
     try:
@@ -68,3 +70,12 @@ def detect_ai_generated_text_kor(text: str, model, max_len=258):
             continue
 
     return utils.format_detection_results(chunk_probabilities)
+
+def detect_ai_generated_image(img: Image, model_img):
+    img = model_img_preprocess(img).unsqueeze(0).to(device)
+    with torch.no_grad():
+        logits = model_img(img)          # shape: [1, 2]
+        probs  = torch.softmax(logits, dim=-1)  # [1,2] – fake/real 확률
+        pred_i = torch.argmax(probs, dim=-1).item()  # index 0 or 1
+        print(pred_i,probs)
+    return pred_i # 0 == fake | 1 == real

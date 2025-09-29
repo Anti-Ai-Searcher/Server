@@ -27,6 +27,6 @@ def get_image_model():
     model.load_state_dict(image_model["state_dict"] if "state_dict" in image_model else image_model, strict=False)
     model.eval()
     print("Done")
-    return model
+    return model, preprocess
 
-model_img = get_image_model()
+model_img, model_img_preprocess = get_image_model()

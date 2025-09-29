@@ -28,9 +28,9 @@ def get_tokens_from_url(url):
     
     except Exception as e:
         print(f"크롤링 오류: {e}")
-        log_file = open("log/log"+time.ctime()+".txt","w")
-        log_file.write(url+"\n",e)
-        log_file.close()
+        #log_file = open("log/log"+time.ctime()+".txt","w")
+        #log_file.write(url+"\n"+e)
+        #log_file.close()
         return None
 
 def tokenize_text_kor(text: str,max_len: int, overlap: int = 25):
