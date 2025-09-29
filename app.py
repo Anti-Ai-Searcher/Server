@@ -1,9 +1,10 @@
 # etc module
 from typing import Union
 import ai_detector.detector as detector
-import read_contents.crawl as crawl
+from read_contents import crawl,pdf_parse
 import os
 from io import BytesIO
+from PIL import Image
 
 # fastapi module
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException
@@ -11,8 +12,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from models.model import device
-from models.eng_loader import model_eng, model_eng_tokenizer
-from models.kor_loader import model_kor, model_kor_tokenizer
+from models.eng_loader import model_eng
+from models.kor_loader import model_kor
 from models.img_loader import model_img
 
 # FastAPI Apps
@@ -50,7 +51,8 @@ async def check_ai(request: Request):
         results = []
         for url in links:
             print(url)
-            text = crawl.get_text_from_url(url)
+            text = crawl.get_tokens_from_url(url)
+            print(url, text)
             if not text:
                 results.append({"url": url, "ai_probability": "텍스트 추출 실패"})
                 continue
@@ -77,14 +79,12 @@ async def check_url(url : str):
         if not url:
             return JSONResponse({"error": "Invalid input. Expecting {'url': 'url'}"})
 
-        text = crawl.get_text_from_url(url)
+        text = crawl.get_tokens_from_url(url)
         if not text:
             return JSONResponse({"error": "크롤링 실패"})
         
-        print(text)
-        ai_prob = detector.detect_ai_generated_text_kor(text,model_kor)
-        print(ai_prob)
-        return JSONResponse({"text": text})
+        ai_prob = detector.detect_ai_generated_text(text,model_eng,model_kor)
+        return JSONResponse({"text": text, "ai_prob" : ai_prob})
         
     except Exception as e:
         return JSONResponse({"error": str(e)})
@@ -94,7 +94,6 @@ async def check_str(request: Request):
     try:
         data = await request.json()
         s = data.get("text", "")
-        print(f'input : {s}')
         if len(s) < 200:
             return JSONResponse(
                 status_code=400,
@@ -114,34 +113,41 @@ async def check_str(request: Request):
             content={"result": "Invalid input. Expecting a JSON object with a 'text' field"}
         )
 
-@app.post("/check_pdf")
-async def check_pdf(request: Request):
+@app.post("/check_file")
+async def check_file(upload: UploadFile = File(...)):
     try:
-        form = await request.form()
-        upload: UploadFile | None = form.get("upload")
-
+        print(2)
         if upload is None:
             raise HTTPException(status_code=400, detail="파일이 전송되지 않았습니다. (필드명: upload)")
+        
+        print(type(upload))
+        file_bytes = await upload.read()
 
-        if upload.content_type != "application/pdf" and not upload.filename.lower().endswith(".pdf"):
-            raise HTTPException(status_code=400, detail="PDF 파일만 업로드할 수 있습니다.")
-
-        pdf_bytes = await upload.read()
-        text = "asfsdafsad"
-        print(f'pdf text : {text}')
-        if not text:
-            return JSONResponse({"error": "PDF에서 텍스트를 추출할 수 없습니다."})
-        elif len(text) < 200:
-            return JSONResponse(
-                status_code=400,
-                content={"error": "텍스트의 길이가 200자 이상이어야 합니다."}
-            )
-        ai_prob = detector.detect_ai_generated_text(text, model_eng,model_kor)
-        result = {
-            "input": text,
-            "result": ai_prob if ai_prob else "판별 실패"
-        }
-        return JSONResponse(result)
+        print(upload.content_type, upload.filename)
+        
+        if upload.content_type == "application/pdf":
+            text = pdf_parse.pdf_parse(file_bytes,128)
+            print(f'pdf text : {text}')
+            if not text:
+                return JSONResponse({"error": "PDF에서 텍스트를 추출할 수 없습니다."})
+        
+            ai_prob = detector.detect_ai_generated_text(text, model_eng,model_kor)
+            print(ai_prob)
+            result = {
+                "input": text,
+                "result": ai_prob if ai_prob else "판별 실패"
+            }   
+            return JSONResponse(result)
+        elif upload.content_type.startswith("image/"):
+            image = Image.open(BytesIO(file_bytes))
+            ai_prob = detector.detect_ai_generated_image(image,model_img)
+            result = {
+                "input": upload.filename,
+                "result" : 1 if ai_prob == 0 else 0
+            }
+            return JSONResponse(result)
+        else:
+            raise HTTPException(status_code=400, detail="PDF 파일과 이미지 파일만 업로드할 수 있습니다.")
 
     except HTTPException as e:
         return JSONResponse({"error": e.detail}, status_code=e.status_code)

@@ -2,6 +2,7 @@ import logging
 from pdfminer.high_level import extract_text
 from langdetect import detect
 from nltk.tokenize import sent_tokenize
+import io
 
 from models.eng_loader import model_eng_tokenizer as tokenizer_eng
 from models.kor_loader import model_kor_tokenizer as tokenizer_kor
@@ -10,10 +11,11 @@ import kss
 # pdfminer 경고 억제
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
-def pdf_parse(path: str, max_len: int, overlap: int = 25):
+def pdf_parse(path: bytes, max_len: int, overlap: int = 25):
     
     # 1. PDF 텍스트 추출
-    text = extract_text(path)
+    with io.BytesIO(path) as pdf_file:
+        text = extract_text(pdf_file)
     
     detected_lang = detect(text)
     if detected_lang == "kor":
