@@ -17,7 +17,8 @@ Pillow
 python-mecab-kor
 protobuf
 nltk
-python multipart
+python-multipart
+sentencepiece
 
 ## clip import command 
-pip install git+https://github.com/openai/CLIP.git
+## pip install git+https://github.com/openai/CLIP.git
