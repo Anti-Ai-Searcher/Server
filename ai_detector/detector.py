@@ -74,8 +74,6 @@ def detect_ai_generated_text_kor(text: str, model, max_len=258):
 def detect_ai_generated_image(img: Image, model_img):
     img = model_img_preprocess(img).unsqueeze(0).to(device)
     with torch.no_grad():
-        logits = model_img(img)          # shape: [1, 2]
-        probs  = torch.softmax(logits, dim=-1)  # [1,2] – fake/real 확률
-        pred_i = torch.argmax(probs, dim=-1).item()  # index 0 or 1
-        print(pred_i,probs)
-    return pred_i # 0 == fake | 1 == real
+        logits = model_img(img)    
+        probs  = torch.softmax(logits, dim=-1)[0].cpu().numpy()  
+    return probs[0]

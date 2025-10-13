@@ -136,15 +136,16 @@ async def check_file(upload: UploadFile = File(...)):
             result = {
                 "input": text,
                 "result": ai_prob if ai_prob else "판별 실패"
-            }   
+            }
             return JSONResponse(result)
         elif upload.content_type.startswith("image/"):
             image = Image.open(BytesIO(file_bytes))
             ai_prob = detector.detect_ai_generated_image(image,model_img)
-            result = {
+            result = { 
                 "input": upload.filename,
-                "result" : 1 if ai_prob == 0 else 0
+                "result" : str(round(ai_prob,4))
             }
+            print(result)
             return JSONResponse(result)
         else:
             raise HTTPException(status_code=400, detail="PDF 파일과 이미지 파일만 업로드할 수 있습니다.")
