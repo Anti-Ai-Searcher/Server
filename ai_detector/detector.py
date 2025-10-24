@@ -13,38 +13,52 @@ def detect_ai_generated_text(text: str, model_eng, model_kor):
     try:
         detected_lang = detect(text)
         if(detected_lang == 'ko'):
-            #print(f"Detected language: Korean, {text}")
             prob = detect_ai_generated_text_kor(text, model_kor)
-            if prob['average_probability'] is None:
-                prob = "error"
-            else:
-                prob = prob['average_probability']
-            return prob
         else:
-            #print(f"Detected language: English, {text}")
-            return detect_ai_generated_text_eng(text, model_eng)
+            prob = detect_ai_generated_text_eng(text, model_eng)
+
+        if prob['average_probability'] is None:
+            prob = "error"
+        else:
+            prob = prob['average_probability']
+        return prob
     except:
         return detect_ai_generated_text_eng(text, model_eng)
     
 def detect_ai_generated_text_eng(text : str, model, max_len=256):
-    try:
-        inputs = tokenizer_eng(
-            text, padding=True, truncation=True, max_length=max_len, return_tensors="pt"
-        ).to(device)
+    chunk_probabilities = []
 
-        with torch.no_grad():
-            outputs = model(**inputs)
-        
-        logits = outputs.logits
-        probabilities = F.softmax(logits, dim=1)
-        ai_probability = probabilities[:, 0].item()
-        #print(ai_probability)
+    chunk_ids_list = crawl.tokenize_text_eng(text, max_len)
 
-        return round(ai_probability, 4)
+    for chunk_ids in chunk_ids_list:
+        if not chunk_ids:
+            continue  
+        try:
+            tokens = chunk_ids
+            sequence_length = len(tokens) + 2
+            
+            num_padding = max_len - sequence_length
+            padding = [tokenizer_eng.pad_token_id] * num_padding
 
-    except Exception as e:
-        #print(f"AI 판별 오류: {e}")
-        return None
+            final_tokens_list = [tokenizer_eng.bos_token_id] + tokens + [tokenizer_eng.eos_token_id] + padding
+            input_ids = torch.tensor(final_tokens_list).unsqueeze(0).to(device)
+            
+            attention_mask = torch.zeros(max_len, dtype=torch.long)
+            attention_mask[:sequence_length] = 1
+            attention_mask = attention_mask.unsqueeze(0).to(device)
+
+            with torch.no_grad():
+                outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+
+            logits = outputs.logits
+            probabilities = F.softmax(logits, dim=1)
+            ai_probability = probabilities[:, 0].item() 
+            chunk_probabilities.append(round(ai_probability, 4))
+            
+        except Exception as e:
+            continue
+
+    return utils.format_detection_results(chunk_probabilities)
 
 def detect_ai_generated_text_kor(text: str, model, max_len=256):
     chunk_probabilities = []
