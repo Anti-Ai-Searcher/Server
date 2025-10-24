@@ -26,7 +26,7 @@ def detect_ai_generated_text(text: str, model_eng, model_kor):
     except:
         return detect_ai_generated_text_eng(text, model_eng)
     
-def detect_ai_generated_text_eng(text : str, model, max_len=128):
+def detect_ai_generated_text_eng(text : str, model, max_len=256):
     try:
         inputs = tokenizer_eng(
             text, padding=True, truncation=True, max_length=max_len, return_tensors="pt"
@@ -46,7 +46,7 @@ def detect_ai_generated_text_eng(text : str, model, max_len=128):
         #print(f"AI 판별 오류: {e}")
         return None
 
-def detect_ai_generated_text_kor(text: str, model, max_len=258):
+def detect_ai_generated_text_kor(text: str, model, max_len=256):
     chunk_probabilities = []
 
     chunk_ids_list = crawl.tokenize_text_kor(text, max_len)
