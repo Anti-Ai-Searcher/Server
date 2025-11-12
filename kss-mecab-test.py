@@ -1,5 +1,7 @@
 import kss
 from mecab import MeCab
+import nltk
+nltk.download('punkt_tab')
 
 m = MeCab()
 print(m.morphs("테스트 중입니다."))
